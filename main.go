@@ -14,9 +14,7 @@ import (
 )
 
 func main() {
-	// starvation()
 	// deadlock()
-	// closure()
 	// goroutines()
 	// mutexRWMutexComparison()
 	// cond()
@@ -45,7 +43,7 @@ func main() {
 	// fanOutFanInIssue()
 	// fanOutFanInSolution()
 	// theTeeChannel()
-	theBridgeChannel()
+	// theBridgeChannel()
 }
 
 func deadlock() {
@@ -74,81 +72,10 @@ func deadlock() {
 	wg.Wait()
 }
 
-func starvation() {
-	var wg sync.WaitGroup
-	var shared_lock sync.Mutex
-	var runtime = 1 * time.Second
-
-	greedyWorker := func() {
-		defer wg.Done()
-
-		var count int
-		for begin := time.Now(); time.Since(begin) <= runtime; {
-			shared_lock.Lock()
-			time.Sleep(1 * time.Nanosecond)
-			shared_lock.Unlock()
-
-			count++
-		}
-
-		fmt.Printf("Greedy worker was able to execute %v work loops\n", count)
-	}
-
-	politeWorker := func() {
-		defer wg.Done()
-
-		var count int
-		for begin := time.Now(); time.Since(begin) <= runtime; {
-			shared_lock.Lock()
-			time.Sleep(1 * time.Nanosecond)
-			shared_lock.Unlock()
-
-			shared_lock.Lock()
-			time.Sleep(1 * time.Nanosecond)
-			shared_lock.Unlock()
-
-			shared_lock.Lock()
-			time.Sleep(1 * time.Nanosecond)
-			shared_lock.Unlock()
-
-			count++
-		}
-
-		fmt.Printf("Polite worker was able to execute %v work loops\n", count)
-	}
-
-	wg.Add(2)
-	go greedyWorker()
-	go politeWorker()
-	wg.Wait()
-}
-
-func closure() {
-	var wg sync.WaitGroup
-	var salutation string
-	for _, salutation = range []string{"Hello", "Greetings", "Good day"} {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			fmt.Println(salutation)
-		}()
-	}
-	wg.Wait()
-}
-
-func closure2() {
-	var wg sync.WaitGroup
-	salutation := "Hello"
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		salutation = "Welcome"
-	}()
-	wg.Wait()
-	fmt.Println(salutation)
-}
-
 func goroutines() {
+	var c <-chan interface{}
+	var wg sync.WaitGroup
+
 	mem_consumed := func() uint64 {
 		runtime.GC()
 		var s runtime.MemStats
@@ -157,8 +84,6 @@ func goroutines() {
 		return s.Sys
 	}
 
-	var c <-chan interface{}
-	var wg sync.WaitGroup
 	noop := func() {
 		wg.Done()
 		<-c
